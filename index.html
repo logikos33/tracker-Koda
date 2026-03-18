@@ -86,11 +86,11 @@
                         <select id="medicationSelect">
                             <option value="">Selecione um medicamento...</option>
                         </select>
-                        <button type="button" class="btn-add-medication" style="margin-top: 8px;" onclick="showAddMedicationModal()">+ Adicionar Novo Medicamento</button>
+                        <button type="button" class="btn-add-medication" style="margin-top: 8px;" onclick="openMedicationModal()">+ Adicionar Novo Medicamento</button>
                     </div>
 
                     <div class="form-group" id="dosageGroup" style="display: none;">
-                        <label for="medicationDosage">Dosagem (ml, mg, gotas, etc.)</label>
+                        <label for="medicationDosage">Dosagem Administrada</label>
                         <input type="text" id="medicationDosage" placeholder="Ex: 5ml, 1 gota, 10mg">
                     </div>
 
@@ -261,6 +261,38 @@
         </div>
     </div>
 
+    <!-- Modal para Adicionar Medicamento -->
+    <div id="medicationModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>💊 Adicionar Novo Medicamento</h2>
+                <button class="modal-close" onclick="closeMedicationModal()">✕</button>
+            </div>
+            <form id="medicationForm" class="modal-form">
+                <div class="form-group">
+                    <label for="newMedicationName">Nome do Medicamento *</label>
+                    <input type="text" id="newMedicationName" required placeholder="Ex: Paracetamol, Vitamina D...">
+                </div>
+                <div class="form-group">
+                    <label for="newMedicationDosage">Dosagem/Concentração *</label>
+                    <input type="text" id="newMedicationDosage" required placeholder="Ex: 100mg/ml, 20mg, gotas...">
+                </div>
+                <div class="form-group">
+                    <label for="newMedicationFrequency">Frequência (opcional)</label>
+                    <input type="text" id="newMedicationFrequency" placeholder="Ex: A cada 8 horas, 2x ao dia...">
+                </div>
+                <div class="form-group">
+                    <label for="newMedicationNotes">Notas/Instruções (opcional)</label>
+                    <textarea id="newMedicationNotes" rows="3" placeholder="Ex: Dar após alimentação, Agitar antes de usar..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeMedicationModal()">Cancelar</button>
+                    <button type="submit" class="btn-primary">💾 Salvar Medicamento</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Load modules in correct order -->
     <script src="js/config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -307,6 +339,29 @@
                     }
                 });
             }
+
+            // Handle medication form submission
+            const medicationForm = document.getElementById('medicationForm');
+            if (medicationForm) {
+                medicationForm.addEventListener('submit', handleMedicationSubmit);
+            }
+
+            // Close modal when clicking outside
+            const modal = document.getElementById('medicationModal');
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeMedicationModal();
+                    }
+                });
+            }
+
+            // Close modal on Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeMedicationModal();
+                }
+            });
         });
     </script>
 

@@ -102,31 +102,72 @@ function populateMedicationSelect(medications) {
 }
 
 /**
- * Show add medication modal (to be implemented)
+ * Open medication modal
+ */
+function openMedicationModal() {
+    const modal = document.getElementById('medicationModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        // Focus on first input
+        setTimeout(() => {
+            document.getElementById('newMedicationName').focus();
+        }, 100);
+    }
+}
+
+/**
+ * Close medication modal
+ */
+function closeMedicationModal() {
+    const modal = document.getElementById('medicationModal');
+    if (modal) {
+        modal.style.display = 'none';
+        // Reset form
+        const form = document.getElementById('medicationForm');
+        if (form) {
+            form.reset();
+        }
+    }
+}
+
+/**
+ * Show add medication modal (deprecated - use openMedicationModal)
  */
 function showAddMedicationModal() {
-    const medicationName = prompt('Nome do medicamento:');
-    if (!medicationName) return;
+    openMedicationModal();
+}
 
-    const dosage = prompt('Dosagem (ex: 5ml, 1 gota, 10mg):');
-    if (!dosage) return;
+/**
+ * Handle medication form submission
+ */
+async function handleMedicationSubmit(event) {
+    event.preventDefault();
 
-    const instructions = prompt('Instruções (opcional):');
+    const name = document.getElementById('newMedicationName').value.trim();
+    const dosage = document.getElementById('newMedicationDosage').value.trim();
+    const frequency = document.getElementById('newMedicationFrequency').value.trim();
+    const notes = document.getElementById('newMedicationNotes').value.trim();
 
-    // Create medication
-    medicationsManager.createMedication({
-        name: medicationName,
+    if (!name || !dosage) {
+        app.showError('Por favor, preencha os campos obrigatórios.');
+        return;
+    }
+
+    const result = await medicationsManager.createMedication({
+        name: name,
         dosage: dosage,
-        instructions: instructions
-    }).then(result => {
-        if (result.success) {
-            app.showSuccess('Medicamento adicionado com sucesso!');
-            // Reload medications and update select
-            medicationsManager.loadMedications();
-        } else {
-            app.showError('Erro ao adicionar medicamento: ' + result.error);
-        }
+        frequency: frequency || null,
+        notes: notes || null
     });
+
+    if (result.success) {
+        app.showSuccess('💊 Medicamento adicionado com sucesso!');
+        closeMedicationModal();
+        // Update medication select
+        populateMedicationSelect(medicationsManager.getAllMedications());
+    } else {
+        app.showError('Erro ao adicionar medicamento: ' + result.error);
+    }
 }
 
 /**
