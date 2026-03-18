@@ -1,4 +1,4 @@
-// Reminders Module for Tracker de Mamadas
+// Reminders Module for Tracker do Koda
 // Handles reminder management and browser notifications
 
 class RemindersManager {
@@ -55,7 +55,7 @@ class RemindersManager {
                 .from(TABLES.REMINDERS)
                 .select('*')
                 .eq('user_id', currentUser.id)
-                .eq('is_active', true)
+                .order('reminder_date', { ascending: true })
                 .order('reminder_time', { ascending: true });
 
             if (error) throw error;
@@ -80,9 +80,11 @@ class RemindersManager {
 
             const newReminder = {
                 user_id: currentUser.id,
+                reminder_date: reminderData.date,
                 reminder_time: reminderData.time,
                 label: reminderData.label,
-                is_active: true
+                is_active: true,
+                is_completed: false
             };
 
             const { data, error } = await this.client
@@ -95,7 +97,11 @@ class RemindersManager {
 
             // Add to local cache
             this.reminders.push(data);
-            this.reminders.sort((a, b) => a.reminder_time.localeCompare(b.reminder_time));
+            this.reminders.sort((a, b) => {
+                const dateCompare = a.reminder_date.localeCompare(b.reminder_date);
+                if (dateCompare !== 0) return dateCompare;
+                return a.reminder_time.localeCompare(b.reminder_time);
+            });
             this.notifyListeners();
 
             return { success: true, data };
@@ -115,9 +121,11 @@ class RemindersManager {
             }
 
             const updates = {};
+            if (reminderData.date !== undefined) updates.reminder_date = reminderData.date;
             if (reminderData.time !== undefined) updates.reminder_time = reminderData.time;
             if (reminderData.label !== undefined) updates.label = reminderData.label;
             if (reminderData.is_active !== undefined) updates.is_active = reminderData.is_active;
+            if (reminderData.is_completed !== undefined) updates.is_completed = reminderData.is_completed;
 
             const { data, error } = await this.client
                 .from(TABLES.REMINDERS)
@@ -133,7 +141,11 @@ class RemindersManager {
             const index = this.reminders.findIndex(r => r.id === reminderId);
             if (index !== -1) {
                 this.reminders[index] = data;
-                this.reminders.sort((a, b) => a.reminder_time.localeCompare(b.reminder_time));
+                this.reminders.sort((a, b) => {
+                    const dateCompare = a.reminder_date.localeCompare(b.reminder_date);
+                    if (dateCompare !== 0) return dateCompare;
+                    return a.reminder_time.localeCompare(b.reminder_time);
+                });
                 this.notifyListeners();
             }
 
@@ -209,6 +221,7 @@ class RemindersManager {
         }
 
         const now = new Date();
+        const currentDate = now.toISOString().slice(0, 10); // YYYY-MM-DD
         const currentTime = now.toTimeString().slice(0, 5); // HH:MM format
         const currentSeconds = now.getSeconds();
 
@@ -218,7 +231,10 @@ class RemindersManager {
         }
 
         this.reminders.forEach(reminder => {
-            if (reminder.is_active && reminder.reminder_time === currentTime) {
+            if (reminder.is_active &&
+                !reminder.is_completed &&
+                reminder.reminder_date === currentDate &&
+                reminder.reminder_time === currentTime) {
                 this.showNotification(reminder);
             }
         });
@@ -230,7 +246,7 @@ class RemindersManager {
             return;
         }
 
-        const notification = new Notification('🍼 Lembrete de Mamada', {
+        const notification = new Notification('⏰ Lembrete - Tracker do Koda', {
             body: reminder.label,
             icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🍼</text></svg>',
             tag: reminder.id,
@@ -243,6 +259,41 @@ class RemindersManager {
         };
 
         console.log('Notification shown for reminder:', reminder.label);
+    }
+
+    // Toggle reminder completion
+    async toggleReminderCompletion(reminderId) {
+        const reminder = this.reminders.find(r => r.id === reminderId);
+        if (reminder) {
+            return await this.updateReminder(reminderId, {
+                is_completed: !reminder.is_completed
+            });
+        }
+        return { success: false, error: 'Reminder not found' };
+    }
+
+    // Format reminder date and time for display
+    formatReminderDateTime(dateString, timeString) {
+        const date = new Date(dateString + 'T00:00:00');
+        const [hours, minutes] = timeString.split(':');
+
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        const isToday = date.toDateString() === today.toDateString();
+        const isTomorrow = date.toDateString() === tomorrow.toDateString();
+
+        let dateLabel;
+        if (isToday) {
+            dateLabel = 'Hoje';
+        } else if (isTomorrow) {
+            dateLabel = 'Amanhã';
+        } else {
+            dateLabel = date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+        }
+
+        return `${dateLabel} às ${hours}:${minutes}`;
     }
 
     // Get all reminders

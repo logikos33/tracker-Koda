@@ -1,4 +1,4 @@
-// Feeds Module for Tracker de Mamadas
+// Feeds Module for Tracker do Koda
 // Handles CRUD operations for feed records using Supabase
 
 class FeedsManager {
@@ -251,15 +251,23 @@ class FeedsManager {
         };
     }
 
-    // Get today's statistics
+    // Get today's statistics (last 24 hours)
     getTodayStatistics() {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        const now = new Date();
+        const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
+        return this.getStatistics(twentyFourHoursAgo, now);
+    }
 
-        return this.getStatistics(today, tomorrow);
+    // Get feeds from last 24 hours
+    getTodayFeeds() {
+        const now = new Date();
+        const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+        return this.feeds.filter(feed => {
+            const feedDate = new Date(feed.feed_date);
+            return feedDate >= twentyFourHoursAgo && feedDate <= now;
+        });
     }
 
     // Get week statistics

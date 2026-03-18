@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tracker de Mamadas - Baby Feed</title>
+    <title>Tracker do Koda - Baby Care</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
@@ -12,7 +12,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>🧸 Tracker do Bebê Urso</h1>
+            <h1>🧸 Tracker do Koda</h1>
             <p>Acompanhe os momentos especiais do seu bebê</p>
         </header>
 
@@ -110,7 +110,7 @@
 
             <!-- Dashboard de Hoje -->
             <div class="card">
-                <h2>💕 Hoje do Bebê</h2>
+                <h2>💕 Últimas 24 Horas</h2>
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="number" id="todayCount">0</div>
@@ -217,12 +217,24 @@
 
         <!-- Lembretes -->
         <div class="card" style="margin-bottom: 20px;">
-            <h2>⏰ Lembretes do Dia</h2>
+            <h2>⏰ Lembretes</h2>
 
-            <form id="reminderForm" style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
-                <input type="time" id="reminderTime" required style="flex: 1; min-width: 150px;">
-                <input type="text" id="reminderLabel" placeholder="Ex: Mamada da manhã" required style="flex: 2; min-width: 200px;">
-                <button type="submit" class="btn-primary" style="flex: 0; min-width: 150px;">+ Adicionar Lembrete</button>
+            <form id="reminderForm" class="reminder-form">
+                <div class="reminder-datetime">
+                    <div class="form-group">
+                        <label for="reminderDate">Data</label>
+                        <input type="date" id="reminderDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reminderTime">Horário</label>
+                        <input type="time" id="reminderTime" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="reminderLabel">Descrição</label>
+                    <input type="text" id="reminderLabel" placeholder="Ex: Consulta pediátrica, Mamada da manhã..." required>
+                </div>
+                <button type="submit" class="btn-primary">+ Adicionar Lembrete</button>
             </form>
 
             <div id="remindersContent">
@@ -268,10 +280,11 @@
                 reminderForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
 
+                    const date = document.getElementById('reminderDate').value;
                     const time = document.getElementById('reminderTime').value;
                     const label = document.getElementById('reminderLabel').value;
 
-                    const result = await remindersManager.createReminder({ time, label });
+                    const result = await remindersManager.createReminder({ date, time, label });
 
                     if (result.success) {
                         app.showSuccess('Lembrete adicionado com sucesso!');

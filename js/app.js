@@ -1,4 +1,4 @@
-// Main App Module for Tracker de Mamadas
+// Main App Module for Tracker do Koda
 // Coordinates all modules and handles UI interactions
 
 class App {
@@ -108,14 +108,14 @@ class App {
 
         const headerTitle = document.querySelector('header h1');
         if (headerTitle) {
-            headerTitle.textContent = `🍼 Tracker de Mamadas${babyName !== 'Seu Bebê' ? ' - ' + babyName : ''}`;
+            headerTitle.textContent = `🧸 Tracker do Koda${babyName !== 'Seu Bebê' ? ' - ' + babyName : ''}`;
         }
 
         const headerSubtitle = document.querySelector('header p');
         if (headerSubtitle) {
             headerSubtitle.textContent = babyAge ?
-                `Acompanhe a alimentação do seu bebê • ${babyAge}` :
-                'Acompanhe a alimentação do seu bebê';
+                `Acompanhe os momentos especiais do seu bebê • ${babyAge}` :
+                'Acompanhe os momentos especiais do seu bebê';
         }
     }
 
@@ -498,7 +498,7 @@ class App {
         const container = document.getElementById('remindersContent');
         if (!container) return;
 
-        const reminders = remindersManager.getActiveReminders();
+        const reminders = remindersManager.getAllReminders();
 
         if (reminders.length === 0) {
             container.innerHTML = `
@@ -513,9 +513,16 @@ class App {
         const listHTML = `
             <div class="reminders-list">
                 ${reminders.map(reminder => `
-                    <div class="reminder-item">
+                    <div class="reminder-item ${reminder.is_completed ? 'completed' : ''}">
+                        <div class="reminder-checkbox">
+                            <input type="checkbox"
+                                   id="reminder-${reminder.id}"
+                                   ${reminder.is_completed ? 'checked' : ''}
+                                   onchange="app.toggleReminderCompletion('${reminder.id}')">
+                            <label for="reminder-${reminder.id}"></label>
+                        </div>
                         <div class="reminder-info">
-                            <div class="reminder-time">${remindersManager.formatReminderTime(reminder.reminder_time)}</div>
+                            <div class="reminder-time">${remindersManager.formatReminderDateTime(reminder.reminder_date, reminder.reminder_time)}</div>
                             <div class="reminder-label">${reminder.label}</div>
                         </div>
                         <div class="reminder-actions">
@@ -547,6 +554,11 @@ class App {
     // Toggle reminder
     async toggleReminder(reminderId) {
         await remindersManager.toggleReminder(reminderId);
+    }
+
+    // Toggle reminder completion
+    async toggleReminderCompletion(reminderId) {
+        await remindersManager.toggleReminderCompletion(reminderId);
     }
 
     // Delete reminder

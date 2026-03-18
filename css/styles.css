@@ -5,7 +5,7 @@
 }
 
 :root {
-    /* Tema Marrom Teddy Bear */
+    /* Tema Marrom Teddy Bear - Ursos */
     --primary-color: #8B6F47;
     --secondary-color: #A0826D;
     --accent-color: #D4A574;
@@ -16,6 +16,55 @@
     --success-color: #7CB342;
     --warning-color: #FFA726;
     --danger-color: #EF5350;
+    --theme-animal: '🧸';
+}
+
+/* Tema Azul - Girafas */
+body.theme-blue {
+    --primary-color: #667eea;
+    --secondary-color: #764ba2;
+    --accent-color: #8860d6;
+    --light-color: #e8eaf6;
+    --dark-color: #4a4a6a;
+    --gradient-start: #667eea;
+    --gradient-end: #764ba2;
+    --theme-animal: '🦒';
+}
+
+/* Tema Rosa - Unicórnios */
+body.theme-pink {
+    --primary-color: #f5576c;
+    --secondary-color: #f093fb;
+    --accent-color: #ff8a9d;
+    --light-color: #fff0f3;
+    --dark-color: #a6384a;
+    --gradient-start: #f093fb;
+    --gradient-end: #f5576c;
+    --theme-animal: '🦄';
+}
+
+/* Tema Verde - Pingins/Coelhos */
+body.theme-green {
+    --primary-color: #11998e;
+    --secondary-color: #38ef7d;
+    --accent-color: #20e6a8;
+    --light-color: #e0f7f0;
+    --dark-color: #0d7a73;
+    --gradient-start: #11998e;
+    --gradient-end: #38ef7d;
+    --theme-animal: '🐧';
+}
+
+/* Tema Roxo - Dragões */
+body.theme-purple {
+    --primary-color: #8E2DE2;
+    --secondary-color: #4A00E0;
+    --accent-color: #a855f7;
+    --light-color: #f3e8ff;
+    --dark-color: #5c1db8;
+    --gradient-start: #8E2DE2;
+    --gradient-end: #4A00E0;
+    --theme-animal: '🐉';
 }
 
 body {
@@ -23,11 +72,26 @@ body {
     background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
     min-height: 100vh;
     padding: 20px;
+    transition: background 0.5s ease;
+}
+
+/* Animal icon animation */
+body::before {
+    content: var(--theme-animal);
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    font-size: 3rem;
+    opacity: 0.1;
+    pointer-events: none;
+    z-index: 0;
 }
 
 .container {
     max-width: 1200px;
     margin: 0 auto;
+    position: relative;
+    z-index: 1;
 }
 
 header {
@@ -82,7 +146,19 @@ header p {
     background: white;
     border-radius: 20px;
     padding: 30px;
-    box-shadow: 0 10px 30px rgba(93, 78, 55, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Decorative animal icons in cards */
+.card::before {
+    content: var(--theme-animal);
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 2rem;
+    opacity: 0.15;
 }
 
 .card h2 {
@@ -92,6 +168,8 @@ header p {
     display: flex;
     align-items: center;
     gap: 10px;
+    position: relative;
+    z-index: 1;
 }
 
 .form-group {
@@ -140,7 +218,7 @@ input:focus, select:focus, textarea:focus {
 
 .btn-submit:hover, .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(139, 111, 71, 0.4);
+    box-shadow: 0 5px 15px rgba(var(--primary-color), 0.4);
 }
 
 .btn-secondary {
@@ -158,7 +236,56 @@ input:focus, select:focus, textarea:focus {
     background: var(--dark-color);
 }
 
-/* Botões rápidos de duração */
+/* Botão rápido de fralda com tema dinâmico */
+.btn-quick-diaper {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    border: none;
+    padding: 20px;
+    border-radius: 15px;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 4px 15px rgba(139, 111, 71, 0.3);
+    width: 100%;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-quick-diaper::before {
+    content: var(--theme-animal);
+    position: absolute;
+    right: 15px;
+    font-size: 2rem;
+    opacity: 0.2;
+}
+
+.btn-quick-diaper:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(var(--primary-color), 0.4);
+}
+
+.btn-quick-diaper:active {
+    transform: translateY(-1px) scale(0.98);
+}
+
+.btn-quick-diaper.bounce {
+    animation: bounce 0.5s ease;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* Duration buttons */
 .duration-buttons {
     display: flex;
     gap: 8px;
@@ -203,6 +330,17 @@ input:focus, select:focus, textarea:focus {
     border-radius: 15px;
     text-align: center;
     border: 2px solid var(--light-color);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::after {
+    content: var(--theme-animal);
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    font-size: 1.5rem;
+    opacity: 0.1;
 }
 
 .stat-card .number {
@@ -227,7 +365,7 @@ input:focus, select:focus, textarea:focus {
     background: white;
     border-radius: 20px;
     padding: 30px;
-    box-shadow: 0 10px 30px rgba(93, 78, 55, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     margin-bottom: 20px;
 }
 
@@ -242,19 +380,32 @@ input:focus, select:focus, textarea:focus {
     background: var(--light-color);
     padding: 20px;
     border-radius: 15px;
+    position: relative;
+    overflow: hidden;
+}
+
+.chart-wrapper::after {
+    content: var(--theme-animal);
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    font-size: 1.5rem;
+    opacity: 0.1;
 }
 
 .chart-wrapper h3 {
     color: var(--primary-color);
     margin-bottom: 15px;
     font-size: 1.1rem;
+    position: relative;
+    z-index: 1;
 }
 
 .history-section {
     background: white;
     border-radius: 20px;
     padding: 30px;
-    box-shadow: 0 10px 30px rgba(93, 78, 55, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .history-table {
@@ -312,8 +463,9 @@ input:focus, select:focus, textarea:focus {
 }
 
 .type-fralda {
-    background: #E8F5E9;
-    color: #43A047;
+    background: var(--light-color);
+    color: var(--dark-color);
+    border: 2px solid var(--accent-color);
 }
 
 .btn-delete {
@@ -426,9 +578,23 @@ input:focus, select:focus, textarea:focus {
     .duration-buttons {
         grid-template-columns: repeat(2, 1fr);
     }
+
+    .btn-quick-diaper::before {
+        display: none;
+    }
+
+    .card::before,
+    .stat-card::after,
+    .chart-wrapper::after {
+        display: none;
+    }
+
+    body::before {
+        font-size: 2rem;
+    }
 }
 
-/* Auth pages styles */
+/* Auth pages */
 .auth-container {
     max-width: 450px;
     margin: 50px auto;
@@ -438,7 +604,7 @@ input:focus, select:focus, textarea:focus {
     background: white;
     border-radius: 20px;
     padding: 40px;
-    box-shadow: 0 10px 30px rgba(93, 78, 55, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .auth-card h1 {
@@ -470,7 +636,7 @@ input:focus, select:focus, textarea:focus {
     text-decoration: underline;
 }
 
-/* Reminders styles */
+/* Reminders */
 .reminders-list {
     margin-top: 20px;
 }
@@ -501,9 +667,16 @@ input:focus, select:focus, textarea:focus {
     font-size: 0.9rem;
 }
 
+.reminder-date {
+    color: #666;
+    font-size: 0.8rem;
+    margin-top: 2px;
+}
+
 .reminder-actions {
     display: flex;
     gap: 10px;
+    align-items: center;
 }
 
 .btn-small {
@@ -526,6 +699,11 @@ input:focus, select:focus, textarea:focus {
 
 .btn-toggle.inactive {
     background: #9e9e9e;
+}
+
+.btn-toggle.completed {
+    background: #4CAF50;
+    opacity: 0.7;
 }
 
 .btn-edit {
@@ -567,18 +745,19 @@ input:focus, select:focus, textarea:focus {
     transform: translateY(-2px);
 }
 
-/* Profile form */
+/* Profile */
 .profile-form {
     max-width: 600px;
     margin: 0 auto;
 }
 
-/* Theme color selector */
+/* Theme selector */
 .theme-selector {
     display: flex;
     gap: 15px;
     margin-top: 20px;
     flex-wrap: wrap;
+    justify-content: center;
 }
 
 .theme-option {
@@ -616,6 +795,10 @@ input:focus, select:focus, textarea:focus {
     font-size: 0.85rem;
     font-weight: 500;
     color: var(--dark-color);
+}
+
+.theme-emoji {
+    font-size: 2rem;
 }
 
 /* Medicamentos */
@@ -697,49 +880,18 @@ input:focus, select:focus, textarea:focus {
     margin-top: 4px;
 }
 
-/* Botão rápido de fralda */
-.btn-quick-diaper {
-    background: linear-gradient(135deg, #43A047 0%, #66BB6A 100%);
-    color: white;
-    border: none;
-    padding: 20px;
-    border-radius: 15px;
-    cursor: pointer;
-    font-family: 'Poppins', sans-serif;
-    font-size: 1.2rem;
-    font-weight: 600;
-    transition: all 0.3s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    box-shadow: 0 4px 15px rgba(67, 160, 71, 0.3);
-    width: 100%;
+/* Diaper section */
+.diaper-section {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     margin-bottom: 20px;
 }
 
-.btn-quick-diaper:hover {
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 6px 20px rgba(67, 160, 71, 0.4);
-}
-
-.btn-quick-diaper:active {
-    transform: translateY(-1px) scale(0.98);
-}
-
-.btn-quick-diaper.bounce {
-    animation: bounce 0.5s ease;
-}
-
-@keyframes bounce {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-}
-
-/* Cards de estatísticas de fraldas */
 .diaper-stats {
-    background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
-    border: 2px solid #81C784;
+    background: linear-gradient(135deg, var(--light-color) 0%, #fff 100%);
+    border: 2px solid var(--accent-color);
     border-radius: 15px;
     padding: 20px;
     text-align: center;
@@ -753,12 +905,12 @@ input:focus, select:focus, textarea:focus {
 .diaper-stats .count {
     font-size: 2.5rem;
     font-weight: 700;
-    color: #2E7D32;
+    color: var(--primary-color);
 }
 
 .diaper-stats .label {
     font-size: 0.9rem;
-    color: #43A047;
+    color: var(--dark-color);
     margin-top: 5px;
 }
 
@@ -769,29 +921,11 @@ input:focus, select:focus, textarea:focus {
 }
 
 .diaper-trend.up {
-    color: #43A047;
+    color: var(--success-color);
 }
 
 .diaper-trend.down {
-    color: #E57373;
-}
-
-/* Seção de fraldas */
-.diaper-section {
-    background: white;
-    border-radius: 20px;
-    padding: 30px;
-    box-shadow: 0 10px 30px rgba(93, 78, 55, 0.2);
-    margin-bottom: 20px;
-}
-
-.diaper-section h2 {
-    color: #43A047;
-    margin-bottom: 20px;
-    font-size: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    color: var(--danger-color);
 }
 
 .diaper-grid {
@@ -814,4 +948,34 @@ input:focus, select:focus, textarea:focus {
     .diaper-grid-3 {
         grid-template-columns: 1fr;
     }
+}
+
+/* Reminder form with date/time */
+.reminder-datetime {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.reminder-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    padding: 10px;
+    background: var(--light-color);
+    border-radius: 8px;
+}
+
+.reminder-checkbox input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.reminder-checkbox label {
+    margin: 0;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--dark-color);
 }

@@ -1,4 +1,4 @@
-// Charts Module for Tracker de Mamadas
+// Charts Module for Tracker do Koda
 // Handles rendering and updating all charts using Chart.js
 
 class ChartsManager {
