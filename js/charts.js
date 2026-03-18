@@ -23,10 +23,10 @@ class ChartsManager {
         this.charts.distribution = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Leite Materno', 'Fórmula'],
+                labels: ['🤱 Materno', '🍼 Fórmula', '👶 Fralda', '💊 Medicação'],
                 datasets: [{
-                    data: [0, 0],
-                    backgroundColor: ['#1976d2', '#f57c00'],
+                    data: [0, 0, 0, 0],
+                    backgroundColor: ['#1976d2', '#f57c00', '#7CB342', '#9C27B0'],
                     borderWidth: 0
                 }]
             },
@@ -37,16 +37,47 @@ class ChartsManager {
                     legend: {
                         position: 'bottom',
                         labels: {
-                            padding: 20,
+                            padding: 15,
                             font: {
                                 family: 'Poppins',
-                                size: 14
+                                size: 12
+                            },
+                            // Always show legend labels
+                            generateLabels: function(chart) {
+                                const data = chart.data;
+                                if (data.labels.length && data.datasets.length) {
+                                    return data.labels.map((label, i) => {
+                                        const dataset = data.datasets[0];
+                                        const value = dataset.data[i];
+                                        const total = dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                        return {
+                                            text: `${label} (${value}) - ${percentage}%`,
+                                            fillStyle: dataset.backgroundColor[i],
+                                            hidden: false,
+                                            index: i
+                                        };
+                                    });
+                                }
+                                return [];
+                            }
+                        }
+                    },
+                    tooltip: {
+                        enabled: true,
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                return `${label}: ${value} (${percentage}%)`;
                             }
                         }
                     },
                     title: {
                         display: true,
-                        text: 'Distribuição por Tipo',
+                        text: 'Distribuição - Últimas 24 Horas',
                         font: {
                             family: 'Poppins',
                             size: 16,
@@ -281,8 +312,10 @@ class ChartsManager {
 
         const maternoCount = feeds.filter(f => f.type === FEED_TYPES.MATERNO).length;
         const formulaCount = feeds.filter(f => f.type === FEED_TYPES.FORMULA).length;
+        const fraldaCount = feeds.filter(f => f.type === FEED_TYPES.FRALDA).length;
+        const medicamentoCount = feeds.filter(f => f.type === 'medicamento').length;
 
-        this.charts.distribution.data.datasets[0].data = [maternoCount, formulaCount];
+        this.charts.distribution.data.datasets[0].data = [maternoCount, formulaCount, fraldaCount, medicamentoCount];
         this.charts.distribution.update();
     }
 

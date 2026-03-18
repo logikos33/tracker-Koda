@@ -176,7 +176,12 @@ class App {
         event.preventDefault();
 
         const type = document.getElementById('feedType').value;
-        const feedDate = document.getElementById('feedDate').value;
+        const feedDateInput = document.getElementById('feedDate').value;
+
+        // Convert local datetime to ISO string with timezone offset
+        const localDate = new Date(feedDateInput);
+        const feedDate = localDate.toISOString();
+
         let result;
 
         if (type === 'fralda') {
@@ -312,16 +317,13 @@ class App {
 
         if (!container || !infoElement) return;
 
-        const feeds = feedsManager.getAllFeeds();
-        const foodFeeds = feeds.filter(f => f.type === 'materno' || f.type === 'formula');
+        const lastFeed = feedsManager.getLastFoodFeed();
 
-        if (foodFeeds.length === 0) {
+        if (!lastFeed) {
             container.style.display = 'none';
             return;
         }
 
-        // Get most recent feed
-        const lastFeed = foodFeeds[0]; // Already sorted by date DESC
         const typeLabel = lastFeed.type === 'materno' ? '🤱 Leite Materno' : '🍼 Fórmula';
         const formattedDate = feedsManager.formatFeedDateCompact(lastFeed.feed_date);
 
@@ -470,8 +472,6 @@ class App {
         const weekCountEl = document.getElementById('diaperWeekCount');
         const monthCountEl = document.getElementById('diaperMonthCount');
         const avgDayEl = document.getElementById('diaperAvgDay');
-        const weekTrendEl = document.getElementById('diaperWeekTrend');
-        const monthTrendEl = document.getElementById('diaperMonthTrend');
 
         if (todayCountEl) todayCountEl.textContent = todayDiapers.length;
         if (weekCountEl) weekCountEl.textContent = weekDiapers.length;
@@ -481,49 +481,11 @@ class App {
         const avgPerDay = Math.round(weekDiapers.length / 7);
         if (avgDayEl) avgDayEl.textContent = avgPerDay;
 
-        // Trends
-        if (weekTrendEl) {
-            const lastWeekDiapers = diaperFeeds.filter(f => {
-                const feedDate = new Date(f.feed_date);
-                const twoWeeksAgo = new Date();
-                twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
-                return feedDate >= twoWeeksAgo && feedDate < weekStart;
-            });
-
-            if (lastWeekDiapers.length > 0) {
-                const diff = weekDiapers.length - lastWeekDiapers.length;
-                const percent = Math.round((diff / lastWeekDiapers.length) * 100);
-                if (diff > 0) {
-                    weekTrendEl.textContent = `↑ ${percent}% vs semana passada`;
-                    weekTrendEl.className = 'diaper-trend up';
-                } else if (diff < 0) {
-                    weekTrendEl.textContent = `↓ ${Math.abs(percent)}% vs semana passada`;
-                    weekTrendEl.className = 'diaper-trend down';
-                } else {
-                    weekTrendEl.textContent = '= Igual à semana passada';
-                    weekTrendEl.className = 'diaper-trend';
-                }
-            } else {
-                weekTrendEl.textContent = '';
-            }
-        }
-
-        if (monthTrendEl) {
-            const avgThisWeek = avgPerDay;
-            const avgMonth = Math.round(monthDiapers.length / 30);
-            if (avgThisWeek > avgMonth) {
-                const percent = Math.round(((avgThisWeek - avgMonth) / avgMonth) * 100);
-                monthTrendEl.textContent = `↑ ${percent}% acima da média`;
-                monthTrendEl.className = 'diaper-trend up';
-            } else if (avgThisWeek < avgMonth) {
-                const percent = Math.round(((avgMonth - avgThisWeek) / avgMonth) * 100);
-                monthTrendEl.textContent = `↓ ${percent}% abaixo da média`;
-                monthTrendEl.className = 'diaper-trend down';
-            } else {
-                monthTrendEl.textContent = '= Na média mensal';
-                monthTrendEl.className = 'diaper-trend';
-            }
-        }
+        // Hide trend elements
+        const weekTrendEl = document.getElementById('diaperWeekTrend');
+        const monthTrendEl = document.getElementById('diaperMonthTrend');
+        if (weekTrendEl) weekTrendEl.style.display = 'none';
+        if (monthTrendEl) monthTrendEl.style.display = 'none';
     }
 
     // Update charts

@@ -331,6 +331,12 @@ class FeedsManager {
             }) + ` às ${timeStr}`;
         }
     }
+
+    // Get last food feed (materno or formula)
+    getLastFoodFeed() {
+        const foodFeeds = this.feeds.filter(f => f.type === 'materno' || f.type === 'formula');
+        return foodFeeds.length > 0 ? foodFeeds[0] : null;
+    }
 }
 
 // Create global feeds instance
