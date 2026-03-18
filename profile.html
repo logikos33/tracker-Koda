@@ -6,6 +6,7 @@
     <title>Perfil - Tracker de Mamadas</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
+    <script src="js/theme.js"></script>
 </head>
 <body>
     <div class="container">
@@ -46,6 +47,34 @@
             <div class="form-group">
                 <label>Email</label>
                 <input type="email" id="userEmail" disabled>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 20px;">
+            <h2>🎨 Cor do Tema</h2>
+            <p style="color: #666; margin-bottom: 15px;">Escolha a cor favorita para personalizar o app do seu bebê!</p>
+
+            <div class="theme-selector">
+                <div class="theme-option selected" data-theme="brown" onclick="selectTheme('brown')">
+                    <div class="theme-color" style="background: linear-gradient(135deg, #8B6F47 0%, #A0826D 100%);"></div>
+                    <div class="theme-label">🧸 Marrom</div>
+                </div>
+                <div class="theme-option" data-theme="blue" onclick="selectTheme('blue')">
+                    <div class="theme-color" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                    <div class="theme-label">💙 Azul</div>
+                </div>
+                <div class="theme-option" data-theme="pink" onclick="selectTheme('pink')">
+                    <div class="theme-color" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);"></div>
+                    <div class="theme-label">💖 Rosa</div>
+                </div>
+                <div class="theme-option" data-theme="green" onclick="selectTheme('green')">
+                    <div class="theme-color" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);"></div>
+                    <div class="theme-label">💚 Verde</div>
+                </div>
+                <div class="theme-option" data-theme="purple" onclick="selectTheme('purple')">
+                    <div class="theme-color" style="background: linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%);"></div>
+                    <div class="theme-label">💜 Roxo</div>
+                </div>
             </div>
         </div>
     </div>
@@ -102,6 +131,11 @@
                 }
             });
 
+            // Load saved theme
+            const savedTheme = localStorage.getItem('theme') || 'brown';
+            applyTheme(savedTheme);
+            highlightSelectedTheme(savedTheme);
+
             // Handle logout
             document.getElementById('logoutButton').addEventListener('click', async () => {
                 if (confirm('Tem certeza que deseja sair?')) {
@@ -125,6 +159,88 @@
                 errorEl.style.display = 'none';
             }
         }
+
+        // Theme definitions
+        const themes = {
+            brown: {
+                '--primary-color': '#8B6F47',
+                '--secondary-color': '#A0826D',
+                '--accent-color': '#D4A574',
+                '--light-color': '#F5E6D3',
+                '--dark-color': '#5D4E37',
+                '--gradient-start': '#C4A484',
+                '--gradient-end': '#8B7355'
+            },
+            blue: {
+                '--primary-color': '#667eea',
+                '--secondary-color': '#764ba2',
+                '--accent-color': '#8860d6',
+                '--light-color': '#e8eaf6',
+                '--dark-color': '#4a4a6a',
+                '--gradient-start': '#667eea',
+                '--gradient-end': '#764ba2'
+            },
+            pink: {
+                '--primary-color': '#f5576c',
+                '--secondary-color': '#f093fb',
+                '--accent-color': '#ff8a9d',
+                '--light-color': '#fff0f3',
+                '--dark-color': '#a6384a',
+                '--gradient-start': '#f093fb',
+                '--gradient-end': '#f5576c'
+            },
+            green: {
+                '--primary-color': '#11998e',
+                '--secondary-color': '#38ef7d',
+                '--accent-color': '#20e6a8',
+                '--light-color': '#e0f7f0',
+                '--dark-color': '#0d7a73',
+                '--gradient-start': '#11998e',
+                '--gradient-end': '#38ef7d'
+            },
+            purple: {
+                '--primary-color': '#8E2DE2',
+                '--secondary-color': '#4A00E0',
+                '--accent-color': '#a855f7',
+                '--light-color': '#f3e8ff',
+                '--dark-color': '#5c1db8',
+                '--gradient-start': '#8E2DE2',
+                '--gradient-end': '#4A00E0'
+            }
+        };
+
+        function selectTheme(themeName) {
+            // Save to localStorage
+            localStorage.setItem('theme', themeName);
+
+            // Apply theme
+            applyTheme(themeName);
+
+            // Highlight selected
+            highlightSelectedTheme(themeName);
+        }
+
+        function applyTheme(themeName) {
+            const theme = themes[themeName];
+            if (!theme) return;
+
+            const root = document.documentElement;
+            for (const [property, value] of Object.entries(theme)) {
+                root.style.setProperty(property, value);
+            }
+        }
+
+        function highlightSelectedTheme(themeName) {
+            document.querySelectorAll('.theme-option').forEach(option => {
+                option.classList.remove('selected');
+                if (option.dataset.theme === themeName) {
+                    option.classList.add('selected');
+                }
+            });
+        }
+
+        // Expose theme function globally
+        window.selectTheme = selectTheme;
     </script>
 </body>
 </html>
