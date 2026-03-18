@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia - Executar SQL no Supabase</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .steps {
+            margin: 30px 0;
+        }
+        .step {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .step h3 {
+            display: inline;
+            color: #333;
+        }
+        .sql-box {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            position: relative;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .copy-btn:hover {
+            background: #45a049;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 15px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Guia - Executar SQL no Supabase</h1>
+
+        <div class="highlight">
+            <strong>📌 Situação Atual:</strong> O Supabase deve estar aberto no seu navegador!
+        </div>
+
+        <div class="steps">
+            <div class="step">
+                <span class="step-number">1</span>
+                <h3>Encontrar o SQL Editor no Supabase</h3>
+                <p>No menu lateral (esquerda), clique em <strong>"SQL Editor"</strong> (ícone de terminal/código)</p>
+            </div>
+
+            <div class="step">
+                <span class="step-number">2</span>
+                <h3>Criar Nova Query</h3>
+                <p>Clique no botão <strong>"New query"</strong> ou no botão <strong>"+"</strong></p>
+            </div>
+
+            <div class="step">
+                <span class="step-number">3</span>
+                <h3>Copiar e Colar o SQL</h3>
+                <p>Copie o SQL abaixo e cole no editor:</p>
+
+                <div class="sql-box">
+                    <button class="copy-btn" onclick="copySQL()">📋 Copiar SQL</button>
+                    <pre id="sqlCode">-- 1. Criar tabelas de medicamentos
+CREATE TABLE IF NOT EXISTS medications (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) NOT NULL,
+  name TEXT NOT NULL,
+  dosage TEXT NOT NULL,
+  frequency TEXT,
+  instructions TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 2. Criar tabela de logs
+CREATE TABLE IF NOT EXISTS medication_logs (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) NOT NULL,
+  medication_id UUID REFERENCES medications(id) ON DELETE CASCADE,
+  dosage_given TEXT NOT NULL,
+  log_date TIMESTAMP WITH TIME ZONE NOT NULL,
+  notes TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 3. Habilitar segurança
+ALTER TABLE medications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE medication_logs ENABLE ROW LEVEL SECURITY;
+
+-- 4. Criar políticas de segurança
+CREATE POLICY IF NOT EXISTS "Users can view own medications"
+  ON medications FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY IF NOT EXISTS "Users can insert own medications"
+  ON medications FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY IF NOT EXISTS "Users can update own medications"
+  ON medications FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY IF NOT EXISTS "Users can delete own medications"
+  ON medications FOR DELETE USING (auth.uid() = user_id);
+
+CREATE POLICY IF NOT EXISTS "Users can view own medication_logs"
+  ON medication_logs FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY IF NOT EXISTS "Users can insert own medication_logs"
+  ON medication_logs FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY IF NOT EXISTS "Users can delete own medication_logs"
+  ON medication_logs FOR DELETE USING (auth.uid() = user_id);
+
+-- 5. Criar índices
+CREATE INDEX IF NOT EXISTS idx_medications_user ON medications(user_id);
+CREATE INDEX IF NOT EXISTS idx_medication_logs_user ON medication_logs(user_id, log_date DESC);
+
+-- 6. Atualizar tabela feeds
+ALTER TABLE feeds DROP CONSTRAINT IF EXISTS feeds_type_check;
+ALTER TABLE feeds ADD CONSTRAINT feeds_type_check
+  CHECK (type IN ('materno', 'formula', 'medicamento', 'fralda'));</pre>
+                </div>
+            </div>
+
+            <div class="step">
+                <span class="step-number">4</span>
+                <h3>Executar o SQL</h3>
+                <p>Clique no botão <strong>RUN ▶️</strong> no canto superior direito do editor</p>
+                <p><strong>Localização:</strong> Lá em cima, é um botão azul com a seta ▶️ e a palavra "RUN"</p>
+            </div>
+
+            <div class="step">
+                <span class="step-number">5</span>
+                <h3>Verificar Sucesso</h3>
+                <p>Você deve ver uma mensagem verde <code>✅ Success</code> e uma tabela mostrando:</p>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>✅ medications - 0 rows</li>
+                    <li>✅ medication_logs - 0 rows</li>
+                    <li>✅ feeds - X rows (seus dados existentes)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="success">
+            <strong>✅ Depois de executar o SQL:</strong>
+            <ol style="margin-left: 20px; margin-top: 10px;">
+                <li>Aguarde 1-2 minutos</li>
+                <li>Acesse: <a href="https://logikos33.github.io/tracker-mamadas/" target="_blank" style="color: #28a745;">https://logikos33.github.io/tracker-mamadas/</a></li>
+                <li>Teste todas as novas funcionalidades! 🎉</li>
+            </ol>
+        </div>
+
+        <div class="highlight">
+            <strong>⚠️ Erro Comum:</strong> Se aparecer <code>"constraint already exists"</code>, está OK! Significa que você já executou antes.
+        </div>
+
+        <div style="margin-top: 30px; text-align: center;">
+            <p style="color: #666;">
+                <strong>Precisa de ajuda?</strong><br>
+                Me diga o que você está vendo na tela do Supabase! 😊
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function copySQL() {
+            const sqlCode = document.getElementById('sqlCode').innerText;
+            navigator.clipboard.writeText(sqlCode).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                btn.textContent = '✅ Copiado!';
+                btn.style.background = '#28a745';
+                setTimeout(() => {
+                    btn.textContent = '📋 Copiar SQL';
+                    btn.style.background = '#4CAF50';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
