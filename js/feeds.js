@@ -310,6 +310,27 @@ class FeedsManager {
             minute: '2-digit'
         });
     }
+
+    // Format feed date for compact display (mobile)
+    formatFeedDateCompact(dateString) {
+        const date = new Date(dateString);
+        const now = new Date();
+        const isToday = date.toDateString() === now.toDateString();
+
+        const timeStr = date.toLocaleString('pt-BR', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        if (isToday) {
+            return `Hoje às ${timeStr}`;
+        } else {
+            return date.toLocaleString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit'
+            }) + ` às ${timeStr}`;
+        }
+    }
 }
 
 // Create global feeds instance

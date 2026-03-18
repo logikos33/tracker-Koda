@@ -286,6 +286,7 @@ class App {
 
     // Update all UI elements
     updateAll() {
+        this.updateLastFeed();
         this.updateDashboard();
         this.updateHistory();
         this.updateCharts();
@@ -293,6 +294,30 @@ class App {
         this.updateDiaperStats();
         this.updateMedicationsList();
         this.updateMedicationLogs();
+    }
+
+    // Update last feed info
+    updateLastFeed() {
+        const container = document.getElementById('lastFeedContainer');
+        const infoElement = document.getElementById('lastFeedInfo');
+
+        if (!container || !infoElement) return;
+
+        const feeds = feedsManager.getAllFeeds();
+        const foodFeeds = feeds.filter(f => f.type === 'materno' || f.type === 'formula');
+
+        if (foodFeeds.length === 0) {
+            container.style.display = 'none';
+            return;
+        }
+
+        // Get most recent feed
+        const lastFeed = foodFeeds[0]; // Already sorted by date DESC
+        const typeLabel = lastFeed.type === 'materno' ? '🤱 Leite Materno' : '🍼 Fórmula';
+        const formattedDate = feedsManager.formatFeedDateCompact(lastFeed.feed_date);
+
+        infoElement.textContent = `${typeLabel} - ${formattedDate}`;
+        container.style.display = 'flex';
     }
 
     // Update dashboard statistics
