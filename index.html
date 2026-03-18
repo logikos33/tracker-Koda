@@ -256,15 +256,25 @@
 
         <!-- Histórico -->
         <div class="history-section">
-            <h2>📖 Memórias do Bebê</h2>
-            <button class="btn-clear" onclick="if(confirm('Tem certeza que deseja limpar TODOS os dados? Esta ação não pode ser desfeita.')) app.handleClearAll()">🗑️ Limpar Todos os Dados</button>
+            <div class="history-header">
+                <h2>📖 Memórias do Bebê</h2>
+                <button class="btn-clear" onclick="if(confirm('Tem certeza que deseja limpar TODOS os dados? Esta ação não pode ser desfeita.')) app.handleClearAll()">🗑️ Limpar Tudo</button>
+            </div>
+
+            <!-- Paginação -->
+            <div class="history-pagination" id="historyPagination">
+                <button class="pagination-btn" onclick="app.previousPage()" id="prevPageBtn" disabled>← Anterior</button>
+                <span class="pagination-info" id="paginationInfo">Página 1 de 1</span>
+                <button class="pagination-btn" onclick="app.nextPage()" id="nextPageBtn" disabled>Próximo →</button>
+            </div>
+
             <div id="historyContent">
                 <div class="empty-state">
                     <svg viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                     </svg>
                     <p>Nenhuma mamada registrada ainda</p>
-                    <p>Comece adicionando uma mamada no formulário acima!</p>
+                    <p>Comece adicionando no formulário acima!</p>
                 </div>
             </div>
         </div>

@@ -4,6 +4,8 @@
 class App {
     constructor() {
         this.isInitialized = false;
+        this.currentPage = 1;
+        this.itemsPerPage = 10; // Itens por página
     }
 
     // Initialize the application
@@ -393,8 +395,15 @@ class App {
                     <p>Comece adicionando no formulário acima!</p>
                 </div>
             `;
+            this.updatePagination(0);
             return;
         }
+
+        // Calculate pagination
+        const totalPages = Math.ceil(feeds.length / this.itemsPerPage);
+        const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+        const endIndex = startIndex + this.itemsPerPage;
+        const paginatedFeeds = feeds.slice(startIndex, endIndex);
 
         const tableHTML = `
             <table class="history-table">
@@ -408,7 +417,7 @@ class App {
                     </tr>
                 </thead>
                 <tbody>
-                    ${feeds.map(feed => `
+                    ${paginatedFeeds.map(feed => `
                         <tr>
                             <td data-label="Data/Hora">${feedsManager.formatFeedDate(feed.feed_date)}</td>
                             <td data-label="Tipo"><span class="type-badge ${
@@ -436,7 +445,41 @@ class App {
         `;
 
         container.innerHTML = tableHTML;
+        this.updatePagination(feeds.length);
     }
+
+    // Update pagination controls
+    updatePagination(totalItems) {
+        const totalPages = Math.ceil(totalItems / this.itemsPerPage);
+        const prevBtn = document.getElementById('prevPageBtn');
+        const nextBtn = document.getElementById('nextPageBtn');
+        const pageInfo = document.getElementById('paginationInfo');
+
+        if (prevBtn) prevBtn.disabled = this.currentPage === 1;
+        if (nextBtn) nextBtn.disabled = this.currentPage === totalPages || totalPages === 0;
+        if (pageInfo) pageInfo.textContent = totalPages > 0 ? `Página ${this.currentPage} de ${totalPages}` : 'Página 1 de 1';
+    }
+
+    // Next page
+    nextPage() {
+        const feeds = feedsManager.getAllFeeds();
+        const totalPages = Math.ceil(feeds.length / this.itemsPerPage);
+
+        if (this.currentPage < totalPages) {
+            this.currentPage++;
+            this.updateHistory();
+        }
+    }
+
+    // Previous page
+    previousPage() {
+        if (this.currentPage > 1) {
+            this.currentPage--;
+            this.updateHistory();
+        }
+    }
+
+    // Delete feed
 
     // Update diaper statistics
     updateDiaperStats() {
@@ -663,6 +706,13 @@ class App {
             const result = await feedsManager.deleteFeed(feedId);
             if (result.success) {
                 this.showSuccess('Registro excluído com sucesso!');
+                // Reset to first page if current page is empty
+                const feeds = feedsManager.getAllFeeds();
+                const totalPages = Math.ceil(feeds.length / this.itemsPerPage);
+                if (this.currentPage > totalPages && this.currentPage > 1) {
+                    this.currentPage--;
+                }
+                this.updateHistory();
             } else {
                 this.showError('Erro ao excluir registro: ' + result.error);
             }
