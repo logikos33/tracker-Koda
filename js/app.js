@@ -155,10 +155,19 @@ class App {
     // Set current datetime in form
     setCurrentDateTime() {
         const now = new Date();
-        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+
+        // Create a properly formatted local datetime string for datetime-local input
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+
+        const localDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+
         const dateInput = document.getElementById('feedDate');
         if (dateInput) {
-            dateInput.value = now.toISOString().slice(0, 16);
+            dateInput.value = localDateTime;
         }
     }
 
