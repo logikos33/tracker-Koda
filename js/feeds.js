@@ -322,19 +322,29 @@ class FeedsManager {
             minute: '2-digit'
         });
 
-        if (isToday) {
-            return `Hoje às ${timeStr}`;
-        } else {
-            return date.toLocaleString('pt-BR', {
-                day: '2-digit',
-                month: '2-digit'
-            }) + ` às ${timeStr}`;
-        }
+        console.log('=== FORMAT FEED DATE COMPACT ===');
+        console.log('Input (ISO):', dateString);
+        console.log('Date object:', date);
+        console.log('Is today:', isToday);
+        console.log('Time string:', timeStr);
+
+        const result = isToday ? `Hoje às ${timeStr}` : date.toLocaleString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit'
+        }) + ` às ${timeStr}`;
+
+        console.log('Result:', result);
+
+        return result;
     }
 
     // Get last food feed (materno or formula)
     getLastFoodFeed() {
         const foodFeeds = this.feeds.filter(f => f.type === 'materno' || f.type === 'formula');
+        console.log('=== GET LAST FOOD FEED ===');
+        console.log('All feeds:', this.feeds);
+        console.log('Food feeds:', foodFeeds);
+        console.log('Last food feed:', foodFeeds.length > 0 ? foodFeeds[0] : null);
         return foodFeeds.length > 0 ? foodFeeds[0] : null;
     }
 }

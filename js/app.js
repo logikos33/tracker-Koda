@@ -319,6 +319,10 @@ class App {
 
         const lastFeed = feedsManager.getLastFoodFeed();
 
+        console.log('=== UPDATE LAST FEED ===');
+        console.log('Last feed:', lastFeed);
+        console.log('Last feed date (ISO):', lastFeed?.feed_date);
+
         if (!lastFeed) {
             container.style.display = 'none';
             return;
@@ -326,6 +330,9 @@ class App {
 
         const typeLabel = lastFeed.type === 'materno' ? '🤱 Leite Materno' : '🍼 Fórmula';
         const formattedDate = feedsManager.formatFeedDateCompact(lastFeed.feed_date);
+
+        console.log('Type label:', typeLabel);
+        console.log('Formatted date:', formattedDate);
 
         infoElement.textContent = `${typeLabel} - ${formattedDate}`;
         container.style.display = 'flex';
