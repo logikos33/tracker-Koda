@@ -1,6 +1,6 @@
-# 🍼 Tracker de Mamadas - Baby Feed (Cloud Version)
+# 🧸 Tracker do Koda - Baby Care App
 
-Uma aplicação web completa para acompanhar as mamadas do seu bebê, com backend na nuvem usando Supabase, permitindo acesso de múltiplos dispositivos e sincronização em tempo real.
+Uma aplicação web completa e fofa para acompanhar todos os cuidados do seu bebê, com backend na nuvem usando Supabase, permitindo acesso de múltiplos dispositivos e sincronização em tempo real.
 
 ## ✨ Funcionalidades
 
@@ -8,16 +8,22 @@ Uma aplicação web completa para acompanhar as mamadas do seu bebê, com backen
 - 👤 **Sistema de Autenticação**: Cadastro e login seguros com email/senha
 - ☁️ **Sincronização na Nuvem**: Acesse seus dados de qualquer dispositivo
 - 👶 **Perfil do Bebê**: Configure nome do bebê e data de nascimento
-- 📝 **Registro de Mamadas**: Adicione mamadas com data, hora, duração, tipo e notas
-- ⏰ **Sistema de Lembretes**: Configure lembretes com notificações do navegador
-- 📊 **Dashboard Completo**: Estatísticas de hoje, semana e mês
+- 📝 **Registro de Alimentações**: Adicione mamadas com data, hora, duração, tipo e notas
+- 💊 **Controle de Medicamentos**: Cadastre medicamentos e registre administrações
+- 👶 **Troca de Fraldas**: Botão rápido para registrar trocas de fraldas com estatísticas
+- ⏰ **Sistema de Lembretes Avançado**: Configure lembretes com data, hora e marque como concluído
+- 📊 **Dashboard Completo**: Estatísticas de últimas 24 horas, semana e mês
 - 📈 **Gráficos Temporais**: Evolução dos últimos 7 e 30 dias
-- 📜 **Histórico Completo**: Acompanhe todas as mamadas registradas
+- 🎨 **Temas com Animais**: 5 temas coloridos com animais fofos (Ursos 🧸, Girafas 🦒, Unicórnios 🦄, Pinguins 🐧, Dragões 🐉)
+- ⚡ **Botões Rápidos**: +1, +5, +10, +15 minutos para facilitar registro
+- 📜 **Histórico Completo**: Acompanhe todos os registros ordenados por data/hora
 - 📱 **Design Responsivo**: Funciona perfeitamente em desktop, tablet e celular
 
-### Tipos de Alimentação
+### Tipos de Registro
 - 🤱 Leite Materno
 - 🍼 Fórmula
+- 👶 Troca de Fralda
+- 💊 Medicamentos
 
 ## 🚀 Configuração Inicial
 
@@ -28,7 +34,7 @@ Uma aplicação web completa para acompanhar as mamadas do seu bebê, com backen
 3. Faça login com GitHub ou Google
 4. Clique em "New Project"
 5. Preencha:
-   - **Name**: `tracker-mamadas`
+   - **Name**: `tracker-koda`
    - **Database Password**: (gere uma senha forte e salve)
    - **Region**: South America (São Paulo) recomendado
 6. Aguarde o provisionamento (~2-3 minutos)
@@ -69,13 +75,35 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
 
--- Criar tabela de feeds (mamadas)
+-- Criar tabela de feeds (alimentações, fraldas, medicamentos)
 CREATE TABLE feeds (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) NOT NULL,
-  type TEXT NOT NULL CHECK (type IN ('materno', 'formula')),
-  duration INTEGER NOT NULL CHECK (duration > 0),
+  type TEXT NOT NULL CHECK (type IN ('materno', 'formula', 'fralda', 'medicamento')),
+  duration INTEGER NOT NULL CHECK (duration >= 0),
   feed_date TIMESTAMP WITH TIME ZONE NOT NULL,
+  notes TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Criar tabela de medicamentos
+CREATE TABLE medications (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) NOT NULL,
+  name TEXT NOT NULL,
+  dosage TEXT NOT NULL,
+  frequency TEXT,
+  notes TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Criar tabela de logs de medicamentos
+CREATE TABLE medication_logs (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) NOT NULL,
+  medication_id UUID REFERENCES medications(id) NOT NULL,
+  dosage_given TEXT NOT NULL,
+  log_date TIMESTAMP WITH TIME ZONE NOT NULL,
   notes TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -84,15 +112,19 @@ CREATE TABLE feeds (
 CREATE TABLE reminders (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) NOT NULL,
+  reminder_date DATE NOT NULL DEFAULT CURRENT_DATE,
   reminder_time TIME NOT NULL,
   label TEXT NOT NULL,
   is_active BOOLEAN DEFAULT true,
+  is_completed BOOLEAN DEFAULT false,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Habilitar Row Level Security (RLS)
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE feeds ENABLE ROW LEVEL SECURITY;
+ALTER TABLE medications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE medication_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reminders ENABLE ROW LEVEL SECURITY;
 
 -- Políticas de segurança para profiles
@@ -114,6 +146,28 @@ CREATE POLICY "Users can delete own feeds"
   ON feeds FOR DELETE
   USING (auth.uid() = user_id);
 
+-- Políticas de segurança para medications
+CREATE POLICY "Users can view own medications"
+  ON medications FOR SELECT
+  USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own medications"
+  ON medications FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own medications"
+  ON medications FOR UPDATE
+  USING (auth.uid() = user_id);
+CREATE POLICY "Users can delete own medications"
+  ON medications FOR DELETE
+  USING (auth.uid() = user_id);
+
+-- Políticas de segurança para medication_logs
+CREATE POLICY "Users can view own medication_logs"
+  ON medication_logs FOR SELECT
+  USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own medication_logs"
+  ON medication_logs FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
 -- Políticas de segurança para reminders
 CREATE POLICY "Users can view own reminders"
   ON reminders FOR SELECT
@@ -131,7 +185,8 @@ CREATE POLICY "Users can delete own reminders"
 -- Criar índices para melhorar performance
 CREATE INDEX idx_feeds_user_date ON feeds(user_id, feed_date DESC);
 CREATE INDEX idx_feeds_date ON feeds(feed_date DESC);
-CREATE INDEX idx_reminders_user_active ON reminders(user_id, is_active);
+CREATE INDEX idx_reminders_user_date ON reminders(user_id, reminder_date, reminder_time);
+CREATE INDEX idx_medications_user ON medications(user_id);
 ```
 
 4. Clique em "Run" para executar
@@ -185,24 +240,40 @@ const SUPABASE_CONFIG = {
 1. Clique em "⚙️ Perfil" no canto superior direito
 2. Adicione o nome do bebê
 3. Adicione a data de nascimento (opcional)
-4. Clique em "Salvar Alterações"
+4. Escolha um tema fofo (Ursos 🧸, Girafas 🦒, Unicórnios 🦄, Pinguins 🐧, Dragões 🐉)
+5. Clique em "Salvar Alterações"
 
-### Registrar uma Mamada
+### Registrar uma Alimentação
 
 1. Preencha o formulário:
    - Tipo de alimentação (Leite Materno ou Fórmula)
-   - Duração em minutos
+   - Use os botões rápidos (+1, +5, +10, +15 min) para ajustar duração
    - Data e hora (preenchido automaticamente)
    - Notas (opcional)
-2. Clique em "Registrar Mamada"
+2. Clique em "✓ Registrar Mamada"
+
+### Registrar Troca de Fralda
+
+1. Clique no botão grande "Registrar Troca de Fralda"
+2. Ou selecione "Fralda" no formulário e adicione notas
+
+### Registrar Medicamento
+
+1. Selecione "Medicamento" no tipo de alimentação
+2. Clique em "+ Adicionar Novo Medicamento" se for o primeiro uso
+3. Preencha nome, dosagem e informações do medicamento
+4. Para uso futuro, basta selecionar o medicamento cadastrado
+5. Informe a dosagem administrada e clique em registrar
 
 ### Configurar Lembretes
 
-1. Na seção "Lembretes de Mamada"
-2. Escolha o horário
-3. Adicione um label (ex: "Mamada da manhã")
-4. Clique em "Adicionar Lembrete"
-5. Permita notificações do navegador quando solicitado
+1. Na seção "Lembretes"
+2. Escolha a data (padrão: hoje)
+3. Escolha o horário
+4. Adicione uma descrição (ex: "Consulta pediátrica", "Mamada da manhã")
+5. Clique em "Adicionar Lembrete"
+6. Permita notificações do navegador quando solicitado
+7. Quando o lembrete acontecer, marque a checkbox para indicar que foi concluído
 
 ### Visualizar Gráficos
 
@@ -214,26 +285,42 @@ const SUPABASE_CONFIG = {
 
 ## 🎯 Estatísticas Disponíveis
 
-### Hoje
-- Total de mamadas
-- Tempo total de amamentação
+### Últimas 24 Horas (🆕)
+- Total de momentos de cuidado
+- Tempo total de alimentação
 - Média de duração
+- Distribuição por tipo
+
+### Trocas de Fralda
+- Total hoje
+- Total na semana
+- Total no mês
+- Média por dia
+- Tendências (vs semana passada, vs média mensal)
 
 ### Esta Semana (7 dias)
-- Total de mamadas
+- Total de momentos
 - Tempo total
 - Média de duração
 
 ### Este Mês (30 dias)
-- Total de mamadas
+- Total de momentos
 - Tempo total
 - Média de duração
+
+## 🎨 Temas Disponíveis
+
+- 🧸 **Marrom (Ursos)** - Tema padrão, aconchegante e fofinho
+- 🦒 **Azul (Girafas)** - Tema alegre e divertido
+- 🦄 **Rosa (Unicórnios)** - Tema mágico e encantador
+- 🐧 **Verde (Pinguins)** - Tema fresco e simpático
+- 🐉 **Roxo (Dragões)** - Tema fantasia e aventura
 
 ## 🛠️ Tecnologias Utilizadas
 
 - **HTML5**: Estrutura da aplicação
-- **CSS3**: Design moderno e responsivo
-- **JavaScript (ES6+)**: Lógica da aplicação
+- **CSS3**: Design moderno, responsivo e temático com animais
+- **JavaScript (ES6+)**: Lógica da aplicação modular
 - **Supabase**: Backend como serviço (banco de dados + autenticação)
 - **Chart.js**: Biblioteca para gráficos interativos
 - **Notification API**: Sistema de notificações do navegador
@@ -241,21 +328,25 @@ const SUPABASE_CONFIG = {
 ## 📁 Estrutura do Projeto
 
 ```
-tracker-mamadas/
+tracker-koda/
 ├── index.html          # Aplicação principal
 ├── login.html          # Tela de login
 ├── register.html       # Tela de cadastro
 ├── profile.html        # Configurações do perfil
 ├── css/
-│   └── styles.css      # Estilos compartilhados
+│   └── styles.css      # Estilos compartilhados e temas
 ├── js/
 │   ├── config.js       # Configuração do Supabase
 │   ├── auth.js         # Sistema de autenticação
-│   ├── feeds.js        # CRUD de mamadas
+│   ├── feeds.js        # CRUD de alimentações
 │   ├── profile.js      # Gerenciamento de perfil
 │   ├── charts.js       # Gráficos e visualizações
-│   ├── reminders.js    # Sistema de lembretes
+│   ├── reminders.js    # Sistema de lembretes avançado
+│   ├── medications.js  # Controle de medicamentos
+│   ├── utils.js        # Funções utilitárias
+│   ├── theme.js        # Gerenciamento de temas
 │   └── app.js          # Lógica principal
+├── sql-migration-lembretes.sql  # Migração do banco
 └── README.md           # Este arquivo
 ```
 
@@ -271,8 +362,10 @@ tracker-mamadas/
 
 1. **Permitir Notificações**: Quando solicitado pelo navegador, permita notificações para receber lembretes
 2. **Múltiplos Dispositivos**: Faça login no celular e computador para sincronizar dados
-3. **Offline**: A aplicação funciona offline, mas precisa de internet para sincronizar
-4. **Backup**: Seus dados estão seguros na nuvem do Supabase
+3. **Botões Rápidos**: Use os botões +1, +5, +10, +15 min para registrar durações mais rapidamente
+4. **Temas**: Escolha o tema favorito do seu bebê na tela de perfil
+5. **Backup**: Seus dados estão seguros na nuvem do Supabase
+6. **Lembretes Futuros**: Agende consultas e compromissos com antecedência usando a data do lembrete
 
 ## 🐛 Troubleshooting
 
@@ -290,6 +383,10 @@ tracker-mamadas/
 - Solução: Verifique se as credenciais em `js/config.js` estão corretas
 - Verifique se o projeto Supabase está ativo
 
+### Erro ao registrar fralda/medicamento
+- Solução: Execute o SQL migration `sql-migration-lembretes.sql` no SQL Editor do Supabase
+- Isso adicionará as colunas `reminder_date` e `is_completed` na tabela de lembretes
+
 ## 📱 Compatibilidade
 
 - ✅ Chrome/Edge (Recomendado)
@@ -297,25 +394,16 @@ tracker-mamadas/
 - ✅ Safari
 - ✅ Navegadores móveis (Chrome Mobile, Safari Mobile)
 
-## 🔄 Migrar da Versão Local
-
-Se você estava usando a versão com localStorage:
-
-1. Os dados antigos continuarão no localStorage do navegador
-2. Para migrar, você precisará:
-   - Criar conta no novo sistema
-   - Re-registrar as mamadas manualmente
-   - Ou aguardar uma ferramenta de migração futura
-
 ## 🚀 Próximas Melhorias Planejadas
 
 - [ ] Exportar dados (PDF, Excel)
 - [ ] Gráficos avançados (percentis)
 - [ ] Suporte para múltiplos bebês
 - [ ] Integração com Google Calendar
-- [ ] Aplicativo mobile (React Native)
+- [ ] Aplicativo mobile (React Native ou PWA)
 - [ ] Modo escuro
 - [ ] Comparativo com outros bebês (anonimizado)
+- [ ] Relatórios mensais automatizados
 
 ## 📄 Licença
 
@@ -330,6 +418,6 @@ Contribuições são bem-vindas! Sinta-se à vontade para:
 
 ---
 
-**Desenvolvido com ❤️ para ajudar pais a acompanhar a alimentação de seus bebês.**
+**Desenvolvido com ❤️ para ajudar pais a acompanhar todos os momentos especiais do seus bebês.**
 
 **Powered by Supabase** - Backend open source para desenvolvimento moderno
