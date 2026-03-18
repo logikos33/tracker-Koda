@@ -305,6 +305,85 @@
     <script src="js/utils.js"></script>
     <script src="js/app.js"></script>
     <script>
+        // Make functions globally available
+        window.openMedicationModal = function() {
+            console.log('Opening medication modal...');
+            const modal = document.getElementById('medicationModal');
+            console.log('Modal element:', modal);
+
+            if (modal) {
+                modal.style.display = 'flex';
+                console.log('Modal display set to flex');
+                // Focus on first input
+                setTimeout(() => {
+                    const nameInput = document.getElementById('newMedicationName');
+                    if (nameInput) {
+                        nameInput.focus();
+                        console.log('Focused on name input');
+                    }
+                }, 100);
+            } else {
+                console.error('Modal element not found!');
+            }
+        };
+
+        window.closeMedicationModal = function() {
+            const modal = document.getElementById('medicationModal');
+            if (modal) {
+                modal.style.display = 'none';
+                // Reset form
+                const form = document.getElementById('medicationForm');
+                if (form) {
+                    form.reset();
+                }
+            }
+        };
+
+        window.handleMedicationSubmit = async function(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('newMedicationName').value.trim();
+            const dosage = document.getElementById('newMedicationDosage').value.trim();
+            const frequency = document.getElementById('newMedicationFrequency').value.trim();
+            const notes = document.getElementById('newMedicationNotes').value.trim();
+
+            if (!name || !dosage) {
+                if (typeof app !== 'undefined' && app.showError) {
+                    app.showError('Por favor, preencha os campos obrigatórios.');
+                } else {
+                    alert('Por favor, preencha os campos obrigatórios.');
+                }
+                return;
+            }
+
+            const result = await medicationsManager.createMedication({
+                name: name,
+                dosage: dosage,
+                frequency: frequency || null,
+                instructions: notes || null
+            });
+
+            if (result.success) {
+                if (typeof app !== 'undefined' && app.showSuccess) {
+                    app.showSuccess('💊 Medicamento adicionado com sucesso!');
+                } else {
+                    alert('💊 Medicamento adicionado com sucesso!');
+                }
+                closeMedicationModal();
+                // Update medication select
+                await medicationsManager.loadMedications();
+                if (typeof populateMedicationSelect === 'function') {
+                    populateMedicationSelect(medicationsManager.getAllMedications());
+                }
+            } else {
+                if (typeof app !== 'undefined' && app.showError) {
+                    app.showError('Erro ao adicionar medicamento: ' + result.error);
+                } else {
+                    alert('Erro ao adicionar medicamento: ' + result.error);
+                }
+            }
+        };
+
         // Handle reminder form submission
         document.addEventListener('DOMContentLoaded', () => {
             // Set default date for reminder form
@@ -343,7 +422,7 @@
             // Handle medication form submission
             const medicationForm = document.getElementById('medicationForm');
             if (medicationForm) {
-                medicationForm.addEventListener('submit', handleMedicationSubmit);
+                medicationForm.addEventListener('submit', window.handleMedicationSubmit);
             }
 
             // Close modal when clicking outside
@@ -351,7 +430,7 @@
             if (modal) {
                 modal.addEventListener('click', (e) => {
                     if (e.target === modal) {
-                        closeMedicationModal();
+                        window.closeMedicationModal();
                     }
                 });
             }
@@ -359,7 +438,7 @@
             // Close modal on Escape key
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
-                    closeMedicationModal();
+                    window.closeMedicationModal();
                 }
             });
         });
