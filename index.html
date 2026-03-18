@@ -341,13 +341,17 @@
 
         window.handleMedicationSubmit = async function(event) {
             event.preventDefault();
+            console.log('=== handleMedicationSubmit called ===');
 
             const name = document.getElementById('newMedicationName').value.trim();
             const dosage = document.getElementById('newMedicationDosage').value.trim();
             const frequency = document.getElementById('newMedicationFrequency').value.trim();
             const notes = document.getElementById('newMedicationNotes').value.trim();
 
+            console.log('Form values:', { name, dosage, frequency, notes });
+
             if (!name || !dosage) {
+                console.error('Missing required fields');
                 if (typeof app !== 'undefined' && app.showError) {
                     app.showError('Por favor, preencha os campos obrigatórios.');
                 } else {
@@ -356,30 +360,46 @@
                 return;
             }
 
-            const result = await medicationsManager.createMedication({
-                name: name,
-                dosage: dosage,
-                frequency: frequency || null,
-                instructions: notes || null
-            });
+            console.log('Calling medicationsManager.createMedication...');
+            console.log('medicationsManager:', medicationsManager);
 
-            if (result.success) {
-                if (typeof app !== 'undefined' && app.showSuccess) {
-                    app.showSuccess('💊 Medicamento adicionado com sucesso!');
+            try {
+                const result = await medicationsManager.createMedication({
+                    name: name,
+                    dosage: dosage,
+                    frequency: frequency || null,
+                    instructions: notes || null
+                });
+
+                console.log('Result:', result);
+
+                if (result.success) {
+                    console.log('Medication created successfully!');
+                    if (typeof app !== 'undefined' && app.showSuccess) {
+                        app.showSuccess('💊 Medicamento adicionado com sucesso!');
+                    } else {
+                        alert('💊 Medicamento adicionado com sucesso!');
+                    }
+                    closeMedicationModal();
+                    // Update medication select
+                    await medicationsManager.loadMedications();
+                    if (typeof populateMedicationSelect === 'function') {
+                        populateMedicationSelect(medicationsManager.getAllMedications());
+                    }
                 } else {
-                    alert('💊 Medicamento adicionado com sucesso!');
+                    console.error('Error creating medication:', result.error);
+                    if (typeof app !== 'undefined' && app.showError) {
+                        app.showError('Erro ao adicionar medicamento: ' + result.error);
+                    } else {
+                        alert('Erro ao adicionar medicamento: ' + result.error);
+                    }
                 }
-                closeMedicationModal();
-                // Update medication select
-                await medicationsManager.loadMedications();
-                if (typeof populateMedicationSelect === 'function') {
-                    populateMedicationSelect(medicationsManager.getAllMedications());
-                }
-            } else {
+            } catch (error) {
+                console.error('Exception in handleMedicationSubmit:', error);
                 if (typeof app !== 'undefined' && app.showError) {
-                    app.showError('Erro ao adicionar medicamento: ' + result.error);
+                    app.showError('Erro ao adicionar medicamento: ' + error.message);
                 } else {
-                    alert('Erro ao adicionar medicamento: ' + result.error);
+                    alert('Erro ao adicionar medicamento: ' + error.message);
                 }
             }
         };
