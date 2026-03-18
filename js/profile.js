@@ -16,10 +16,9 @@ class ProfileManager {
     // Load user profile
     async loadProfile() {
         try {
-            const user = this.client.auth.getUser();
-            const { data: { user: currentUser } } = await user;
+            const { data: { user: currentUser }, error: userError } = await this.client.auth.getUser();
 
-            if (!currentUser) {
+            if (userError || !currentUser) {
                 throw new Error('User not authenticated');
             }
 
@@ -48,10 +47,9 @@ class ProfileManager {
     // Create user profile
     async createProfile(profileData = {}) {
         try {
-            const user = this.client.auth.getUser();
-            const { data: { user: currentUser } } = await user;
+            const { data: { user: currentUser }, error: userError } = await this.client.auth.getUser();
 
-            if (!currentUser) {
+            if (userError || !currentUser) {
                 throw new Error('User not authenticated');
             }
 
@@ -80,10 +78,9 @@ class ProfileManager {
     // Update user profile
     async updateProfile(profileData) {
         try {
-            const user = this.client.auth.getUser();
-            const { data: { user: currentUser } } = await user;
+            const { data: { user: currentUser }, error: userError } = await this.client.auth.getUser();
 
-            if (!currentUser) {
+            if (userError || !currentUser) {
                 throw new Error('User not authenticated');
             }
 

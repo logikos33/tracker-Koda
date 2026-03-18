@@ -45,10 +45,9 @@ class RemindersManager {
     // Load all reminders for current user
     async loadReminders() {
         try {
-            const user = this.client.auth.getUser();
-            const { data: { user: currentUser } } = await user;
+            const { data: { user: currentUser }, error: userError } = await this.client.auth.getUser();
 
-            if (!currentUser) {
+            if (userError || !currentUser) {
                 throw new Error('User not authenticated');
             }
 
@@ -73,10 +72,9 @@ class RemindersManager {
     // Create a new reminder
     async createReminder(reminderData) {
         try {
-            const user = this.client.auth.getUser();
-            const { data: { user: currentUser } } = await user;
+            const { data: { user: currentUser }, error: userError } = await this.client.auth.getUser();
 
-            if (!currentUser) {
+            if (userError || !currentUser) {
                 throw new Error('User not authenticated');
             }
 
@@ -110,10 +108,9 @@ class RemindersManager {
     // Update an existing reminder
     async updateReminder(reminderId, reminderData) {
         try {
-            const user = this.client.auth.getUser();
-            const { data: { user: currentUser } } = await user;
+            const { data: { user: currentUser }, error: userError } = await this.client.auth.getUser();
 
-            if (!currentUser) {
+            if (userError || !currentUser) {
                 throw new Error('User not authenticated');
             }
 
@@ -150,10 +147,9 @@ class RemindersManager {
     // Delete a reminder
     async deleteReminder(reminderId) {
         try {
-            const user = this.client.auth.getUser();
-            const { data: { user: currentUser } } = await user;
+            const { data: { user: currentUser }, error: userError } = await this.client.auth.getUser();
 
-            if (!currentUser) {
+            if (userError || !currentUser) {
                 throw new Error('User not authenticated');
             }
 

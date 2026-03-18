@@ -27,10 +27,9 @@ class FeedsManager {
     // Load all feeds for current user
     async loadFeeds() {
         try {
-            const user = this.client.auth.getUser();
-            const { data: { user: currentUser } } = await user;
+            const { data: { user: currentUser }, error: userError } = await this.client.auth.getUser();
 
-            if (!currentUser) {
+            if (userError || !currentUser) {
                 throw new Error('User not authenticated');
             }
 
@@ -54,10 +53,9 @@ class FeedsManager {
     // Create a new feed
     async createFeed(feedData) {
         try {
-            const user = this.client.auth.getUser();
-            const { data: { user: currentUser } } = await user;
+            const { data: { user: currentUser }, error: userError } = await this.client.auth.getUser();
 
-            if (!currentUser) {
+            if (userError || !currentUser) {
                 throw new Error('User not authenticated');
             }
 
@@ -91,10 +89,9 @@ class FeedsManager {
     // Update an existing feed
     async updateFeed(feedId, feedData) {
         try {
-            const user = this.client.auth.getUser();
-            const { data: { user: currentUser } } = await user;
+            const { data: { user: currentUser }, error: userError } = await this.client.auth.getUser();
 
-            if (!currentUser) {
+            if (userError || !currentUser) {
                 throw new Error('User not authenticated');
             }
 
@@ -131,10 +128,9 @@ class FeedsManager {
     // Delete a feed
     async deleteFeed(feedId) {
         try {
-            const user = this.client.auth.getUser();
-            const { data: { user: currentUser } } = await user;
+            const { data: { user: currentUser }, error: userError } = await this.client.auth.getUser();
 
-            if (!currentUser) {
+            if (userError || !currentUser) {
                 throw new Error('User not authenticated');
             }
 
