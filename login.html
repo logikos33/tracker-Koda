@@ -14,6 +14,21 @@
             <h1>🍼 Tracker do Koda</h1>
             <p>Acesse sua conta para continuar</p>
 
+            <!-- Demo Mode Button -->
+            <div class="demo-mode-section">
+                <button type="button" class="btn-demo" onclick="enterDemoMode()">
+                    <span style="font-size: 1.5rem;">🎮</span>
+                    <span>Experimentar Demo Grátis</span>
+                    <small style="display: block; font-weight: 400; font-size: 0.8rem; margin-top: 4px;">
+                        Sem cadastro • Dados temporários
+                    </small>
+                </button>
+            </div>
+
+            <div style="text-align: center; margin: 20px 0; color: #999; font-size: 0.9rem;">
+                ou faça login com sua conta
+            </div>
+
             <div id="errorMessage" class="error-message"></div>
             <div id="successMessage" class="success-message"></div>
 
@@ -40,14 +55,74 @@
 
     <!-- Load modules in correct order -->
     <script src="js/config.js"></script>
+    <script src="js/config-demo.js?v=2"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/auth.js"></script>
     <script>
+        // Enter Demo Mode
+        async function enterDemoMode() {
+            showMessage('Entrando no modo demo...', 'success');
+
+            // Marca como modo demo
+            localStorage.setItem('isDemoMode', 'true');
+
+            // Tenta fazer login com usuário demo
+            const result = await authManager.signIn(
+                DEMO_USER.email,
+                DEMO_USER.password
+            );
+
+            if (result.success) {
+                showMessage('✅ Modo demo ativado!', 'success');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 500);
+            } else {
+                // Se falhar, cria modo local (sem Supabase)
+                console.warn('Demo login failed, using local mode');
+                localStorage.setItem('demoLocalMode', 'true');
+                window.location.href = 'index.html';
+            }
+        }
+
         // Login page logic
         document.addEventListener('DOMContentLoaded', async () => {
             await authManager.init();
 
-            // Redirect if already authenticated
+            // Se já está em modo demo, redireciona
+            if (localStorage.getItem('isDemoMode') === 'true' && authManager.isAuthenticated()) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Redirect if already authenticated (não demo)
+            if (authManager.isAuthenticated()) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Handle form submission
+            document.getElementById('loginForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+
+                const result = await authManager.signIn(email, password);
+
+                if (result.success) {
+                    // Remove modo demo se estava ativo
+                    localStorage.removeItem('isDemoMode');
+
+                    showMessage('Login realizado com sucesso! Redirecionando...', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1000);
+                } else {
+                    showMessage(result.error || 'Erro ao fazer login. Verifique suas credenciais.', 'error');
+                }
+            });
+        });
             if (authManager.isAuthenticated()) {
                 window.location.href = 'index.html';
                 return;

@@ -49,6 +49,11 @@ class App {
 
     // Setup UI elements
     setupUI() {
+        // Show demo warning if in demo mode
+        if (typeof DemoConfig !== 'undefined' && DemoConfig.isDemo()) {
+            DemoConfig.showWarning();
+        }
+
         // Update header with baby's name
         this.updateHeader();
 
